@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>wgx作品集</title>
+    <!-- 清新图标库 (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 淡蓝色水墨画背景 —— 多层渐变 + 柔和水墨晕染效果 */
+            background-color: #dcebf7;  /* 基底淡蓝 */
+            background-image: 
+                /* 墨韵大笔触 */
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                /* 宣纸纹理：极淡的斜纹 */
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                /* 墨点飞白 */
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 主卡片 —— 半透明磨砂，让水墨背景透出来，高级清新 */
+        .resume-portfolio {
+            max-width: 1300px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 40px -12px rgba(30, 70, 100, 0.2), 
+                        0 4px 18px rgba(140, 180, 210, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        /* 左侧 · 经历时间轴 — 无分割线，干净 */
+        .timeline-section {
+            flex: 1.1;
+            min-width: 300px;
+            padding-right: 0.5rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .section-title i {
+            font-size: 1.8rem;
+            color: #2e6279;
+            opacity: 0.8;
+            filter: drop-shadow(0 2px 4px rgba(90, 140, 170, 0.2));
+        }
+
+        .section-title h2 {
+            font-weight: 350;
+            font-size: 1.9rem;
+            color: #1e4459;
+            text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.6);
+            border-bottom: 1.5px solid rgba(70, 130, 160, 0.2);
+            padding-bottom: 6px;
+        }
+
+        /* ----- 时间轴 (一条竖线) ----- */
+        .timeline {
+            position: relative;
+            padding-left: 38px;
+            margin-top: 12px;
+        }
+
+        /* 那条纤细的竖线 —— 如水墨一笔 */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 8px;
+            bottom: 8px;
+            width: 2.5px;
+            background: linear-gradient(to bottom, 
+                rgba(100, 150, 180, 0.5) 0%, 
+                rgba(80, 130, 170, 0.35) 30%,
+                rgba(110, 165, 190, 0.45) 70%,
+                rgba(140, 190, 210, 0.2) 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 8px rgba(160, 200, 230, 0.3);
+        }
+
+        /* 时间轴条目 */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 36px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 圆点 — 已发生/未发生不同风格 */
+        .timeline-dot {
+            position: absolute;
+            left: -28px;    /* 对齐竖线: 竖线在18px, 圆点中心对齐 */
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 2px 10px rgba(70, 120, 150, 0.2);
+            border: 1.5px solid rgba(70, 130, 160, 0.6);
+            transition: transform 0.2s ease;
+            z-index: 2;
+        }
+
+        /* 已发生节点 — 饱满墨蓝 */
+        .timeline-item.done .timeline-dot {
+            background: #3c6e8c;
+            border-color: #d4e7f0;
+            box-shadow: 0 0 0 4px rgba(200, 225, 245, 0.5), 0 4px 10px rgba(40, 100, 140, 0.25);
+        }
+
+        /* 未发生节点 — 清透留白 */
+        .timeline-item.pending .timeline-dot {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px dashed #7fa5bd;
+            box-shadow: 0 0 0 3px rgba(220, 240, 255, 0.4);
+        }
+
+        /* 未来省略节点 — 极淡 */
+        .timeline-item.future .timeline-dot {
+            background: rgba(210, 230, 245, 0.5);
+            border: 1.5px dotted #98b9cf;
+            box-shadow: 0 0 0 3px rgba(235, 245, 255, 0.4);
+        }
+
+        .timeline-content {
+            margin-left: 8px;
+            padding: 6px 0 6px 12px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.15s;
+        }
+
+        .timeline-item:hover .timeline-content {
+            background: rgba(255, 255, 255, 0.4);
+            border-left: 1px solid rgba(70, 140, 180, 0.3);
+        }
+
+        .timeline-time {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #1c4b63;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-time i {
+            font-size: 0.9rem;
+            color: #4d7e9c;
+            opacity: 0.8;
+        }
+
+        .timeline-desc {
+            margin-top: 6px;
+            font-size: 1rem;
+            color: #1e3f52;
+            font-weight: 350;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: rgba(70, 130, 160, 0.2);
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #1a4b61;
+            border: 1px solid rgba(110, 165, 190, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        .badge.light {
+            background: rgba(200, 225, 240, 0.3);
+        }
+
+        .future-note {
+            font-style: italic;
+            color: #4f748b;
+            opacity: 0.8;
+        }
+
+        /* 右侧 · 作品/证书入口 */
+        .showcase-section {
+            flex: 1.2;
+            min-width: 320px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 0.8rem;
+        }
+
+        /* 图形卡片 —— 可点击跳转 */
+        .showcase-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            color: #1a4459;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 1.8rem 0.8rem;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 12px 22px -10px rgba(30, 70, 100, 0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+            cursor: pointer;
+        }
+
+        .showcase-card:hover {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 24px 30px -14px rgba(40, 90, 130, 0.25), inset 0 1px 0 rgba(255,255,255,0.9);
+            border-color: rgba(140, 190, 220, 0.6);
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            color: #2a627c;
+            filter: drop-shadow(2px 6px 10px rgba(70, 120, 150, 0.15));
+            transition: transform 0.2s;
+        }
+
+        .showcase-card:hover .card-icon {
+            transform: scale(1.02);
+            color: #1e5268;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 470;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            color: #153e51;
+        }
+
+        .card-sub {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            font-weight: 300;
+        }
+
+        /* 右侧区域的小标题 */
+        .showcase-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1.6rem;
+        }
+
+        .showcase-header h3 {
+            font-weight: 350;
+            font-size: 1.8rem;
+            color: #1f485e;
+            margin-right: 14px;
+        }
+
+        .showcase-header i {
+            color: #3e778f;
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        /* 响应式微调 */
+        @media screen and (max-width: 700px) {
+            body {
+                padding: 1rem 0.8rem;
+                align-items: flex-start;
+            }
+            .resume-portfolio {
+                padding: 1.8rem 1.2rem;
+                gap: 1.2rem;
+            }
+            .section-title h2 {
+                font-size: 1.7rem;
+            }
+            .timeline {
+                padding-left: 30px;
+            }
+            .timeline::before {
+                left: 14px;
+            }
+            .timeline-dot {
+                left: -24px;
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .showcase-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            .showcase-card {
+                padding: 1.2rem 0.4rem;
+            }
+        }
+
+        /* 细微装饰 — 水印质感 */
+        .resume-portfolio::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            width: 180px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(170,210,235,0.1) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .resume-portfolio {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 让所有内容在磨砂层上方 */
+        .timeline-section, .showcase-section {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 优雅的小点缀 */
+        .timeline-item:last-child {
+            margin-bottom: 8px;
+        }
+
+        /* 水墨点缀: 模拟淡墨晕开 */
+        .ink-splash {
+            position: absolute;
+            bottom: 10px;
+            left: 5%;
+            width: 250px;
+            height: 150px;
+            background: radial-gradient(ellipse at 30% 40%, rgba(160,200,225,0.15) 0%, transparent 70%);
+            z-index: 1;
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+
+        .resume-portfolio .ink-splash {
+            pointer-events: none;
+        }
+
+        /* 增加一个内嵌水墨圈 (不干扰内容) */
+        .resume-portfolio .ink-splash-two {
+            position: absolute;
+            top: 30px;
+            right: 0;
+            width: 300px;
+            height: 200px;
+            background: radial-gradient(circle at 70% 20%, rgba(210,230,250,0.2) 0%, transparent 65%);
+            z-index: 1;
+            filter: blur(30px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="resume-portfolio">
+    <!-- 装饰性水墨晕染 (无功能，仅意境) -->
+    <div class="ink-splash"></div>
+    <div class="ink-splash-two"></div>
+
+    <!-- 左侧：经历 · 时间轴 -->
+    <div class="timeline-section">
+        <div class="section-title">
+            <i class="fas fa-feather-alt"></i>
+            <h2>行迹 · 时间轴</h2>
+        </div>
+
+        <div class="timeline">
+            <!-- 已完成节点：本科大学在读中 -->
+            <div class="timeline-item done">
+                <span class="timeline-dot"></span>
+                <div class="timeline-content">
+                    <div class="timeline-time">
+                        <i class="far fa-calendar-check"></i> 2023.09 — 至今
+                        <span class="badge">进行中</span>
+                    </div>
+                    <div class="timeline-desc">
+                        <i class="fas fa-graduation-cap" style="opacity: 0.8;"></i> 
+                        本科大学在读中 
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- 未经历节点：2026年6月中下旬 -->
+            <div class="timeline-item pending">
+                <span class="timeline-dot"></span>
+                <div class="timeline-content">
+                    <div class="timeline-time">
+                        <i class="far fa-hourglass"></i> 2026.06 中下旬
+                        <span class="badge light">即将到来</span>
+                    </div>
+                    <div class="timeline-desc">
+                        <i class="fas fa-scroll"></i> 结课，开始实习期
+                    </div>
+                    <div style="font-size:0.9rem; margin-top:4px; color:#3d6b83;">
+                        毕业设计 
+                    </div>
+                </div>
+            </div>
+
+            <!-- 等等等结束 · 未来节点 (留白意境) -->
+            <div class="timeline-item future">
+                <span class="timeline-dot"></span>
+                <div class="timeline-content">
+                    <div class="timeline-time">
+                        <i class="far fa-star"></i> 2027.6毕业
+                    </div>
+                    <div class="timeline-desc future-note">
+                        <i class="fas fa-ellipsis-h"></i> 探索 ······
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- 可增加一个微小的留白表示等等等 (已经包含) -->
+            <div style="margin-top: 12px; padding-left: 16px; opacity: 0.5; font-size: 0.9rem;">
+                <i class="fas fa-water" style="margin-right: 8px;"></i> 未完待续
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：图形入口 · 获奖/证书/作品集 (点击跳转) -->
+    <div class="showcase-section">
+       
+        <div class="showcase-grid">
+            <!-- 竞赛获奖 → competition.html -->
+            <a href="competition.html" class="showcase-card" target="_self">
+                <div class="card-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="card-title">竞赛获奖</div>
+                <div class="card-sub">Honor & Awards</div>
+            </a>
+
+            <!-- 证书 → certificate.html -->
+            <a href="certificate.html" class="showcase-card" target="_self">
+                <div class="card-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <div class="card-title">证书</div>
+                <div class="card-sub">Licenses & Certs</div>
+            </a>
+
+            <!-- 推荐信 → recommendation.html -->
+            <a href="recommendation.html" class="showcase-card" target="_self">
+                <div class="card-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <div class="card-title">推荐信</div>
+                <div class="card-sub">References</div>
+            </a>
+
+            <!-- 工业作品集 → industry.html -->
+            <a href="industry.html" class="showcase-card" target="_self">
+                <div class="card-icon">
+                    <i class="fas fa-industry"></i>
+                </div>
+                <div class="card-title">工业作品集</div>
+                <div class="card-sub">Industrial works</div>
+            </a>
+
+            <!-- 数据方向作品集 → data.html -->
+            <a href="data.html" class="showcase-card" target="_self">
+                <div class="card-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="card-title">数据方向作品</div>
+                <div class="card-sub">Data portfolio</div>
+            </a>
+        </div>
+        
+        <!-- 极简装饰文字 -->
+        <div style="margin-top: 2.2rem; text-align: right; opacity: 0.5; font-size: 0.85rem; padding-right: 8px;">
+            <i class="fas fa-arrow-right"></i> 点击卡片 · 探索更多
+        </div>
+    </div>
+</div>
+
+<!-- 极简说明：背景为淡蓝水墨，已满足；所有跳转仅写链接，目标页面需自行创建 -->
+</body>
+</html>

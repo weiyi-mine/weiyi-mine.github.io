@@ -5,19 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>weiguoxin作品集</title>
     <style>
+        /* 背景替换为上次对话生成的淡蓝色水墨画效果 */
         body {
-            background-color: #abcdffbd;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 100px;
             font-family: Arial, sans-serif;
             text-align: center;
-            padding-top: 100px;
+            
+            /* 淡蓝色水墨画背景 —— 多层渐变 + 柔和水墨晕染 */
+            background-color: #dcebf7;  /* 基底淡蓝 */
+            background-image: 
+                /* 墨韵大笔触 */
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                /* 宣纸纹理：极淡的斜纹 */
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                /* 墨点飞白 */
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
         }
+
         h1 {
-            color: #333;
+            color: #1e4459;
+            text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.5);
         }
+
         p {
-            color: #666;
+            color: #1e3f52;
             font-size: 20px;
+            font-weight: 350;
         }
+
         .avatar {
             width: 150px;
             height: 150px;
@@ -26,6 +49,38 @@
             margin: 20px auto;
             line-height: 150px;
             font-size: 50px;
+            box-shadow: 0 8px 20px rgba(50, 90, 120, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        a {
+            color: #1f5a78;
+            text-decoration: none;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        a:hover {
+            background: rgba(255, 255, 255, 0.4);
+            color: #0e3b4f;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(90, 140, 170, 0.3), transparent);
+            width: 50%;
+            margin-top: 30px;
+        }
+
+        /* 联系方式文字微调 */
+        p:last-of-type {
+            color: #1a4459;
         }
     </style>
 </head>
@@ -35,7 +90,7 @@
     
     <h1>你好，我是韦国欣</h1>
     <p>这是我的作品集！</p>
-    <a href="anout.html">关于我</a>
+    <a href="about.html">关于我</a>
     <hr style="width: 50%; margin-top: 30px;">
     <p style="font-size: 20px;">📧 联系方式：wgx987321@qq.com</p>
 </body>
