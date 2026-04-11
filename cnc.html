@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CNC · G代码库</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 水墨背景 */
+            background-color: #dcebf7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 主容器 */
+        .page-wrapper {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(235, 240, 245, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 40px -12px rgba(30, 60, 80, 0.2), 
+                        0 4px 18px rgba(120, 140, 160, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(210, 220, 230, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ink-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .ink-bg::before {
+            content: ''; position: absolute; bottom: -30px; right: -20px;
+            width: 280px; height: 200px;
+            background: radial-gradient(ellipse at 70% 50%, rgba(140, 160, 180, 0.15) 0%, transparent 70%);
+            filter: blur(30px); border-radius: 50%;
+        }
+        .ink-bg::after {
+            content: ''; position: absolute; top: 10px; left: 5%;
+            width: 220px; height: 160px;
+            background: radial-gradient(circle at 20% 30%, rgba(190, 205, 220, 0.12) 0%, transparent 65%);
+            filter: blur(25px);
+        }
+
+        .content {
+            position: relative; z-index: 5;
+        }
+
+        /* 头部 */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.8rem; flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            color: #2c4b63; text-decoration: none; font-weight: 400;
+            background: rgba(230, 235, 240, 0.5); padding: 8px 18px;
+            border-radius: 60px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(180, 195, 210, 0.5); transition: all 0.2s;
+        }
+        .back-link i { font-size: 0.9rem; opacity: 0.8; }
+        .back-link:hover {
+            background: rgba(210, 220, 230, 0.7); color: #1a3a4e;
+            border-color: #9aafc0; transform: translateX(-4px);
+        }
+        .page-title {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .page-title i {
+            font-size: 2.2rem; color: #5a6f7e; opacity: 0.9;
+        }
+        .page-title h1 {
+            font-weight: 350; font-size: 2.2rem; letter-spacing: 2px;
+            color: #1e4459; text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+            border-bottom: 1.5px solid rgba(100, 120, 140, 0.3); padding-bottom: 4px;
+        }
+
+        /* 说明区 */
+        .gcode-info {
+            margin-bottom: 28px; display: flex; align-items: center; gap: 12px;
+            color: #2e5a70; background: rgba(190, 205, 220, 0.2);
+            padding: 10px 22px; border-radius: 48px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(150, 170, 190, 0.3);
+        }
+
+        /* G代码卡片列表 */
+        .gcode-list {
+            display: flex; flex-direction: column; gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .gcode-card {
+            display: flex; align-items: center; flex-wrap: wrap;
+            background: rgba(245, 250, 255, 0.55); backdrop-filter: blur(8px);
+            border-radius: 24px; padding: 16px 24px;
+            border: 1px solid rgba(200, 215, 230, 0.7);
+            border-left: 8px solid #7e96a8;
+            box-shadow: 0 6px 14px rgba(50, 70, 90, 0.08);
+            transition: 0.2s;
+        }
+        .gcode-card:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-left-width: 10px;
+            box-shadow: 0 10px 20px -8px rgba(60, 80, 100, 0.18);
+        }
+
+        .file-icon {
+            font-size: 2.4rem; width: 60px; text-align: center;
+            color: #4d6a80; margin-right: 16px;
+        }
+        .file-info {
+            flex: 1; min-width: 180px;
+        }
+        .file-name {
+            font-weight: 600; font-size: 1.2rem; color: #1d3e52;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .file-desc {
+            font-size: 0.85rem; opacity: 0.75; margin-top: 4px;
+        }
+        .badge {
+            background: #a0b8c8; color: #0f2e40; font-size: 0.7rem;
+            padding: 2px 10px; border-radius: 30px; font-weight: 400;
+        }
+        .card-actions {
+            display: flex; gap: 12px; margin-left: auto;
+        }
+        .btn {
+            background: rgba(220, 230, 240, 0.7); border: 1px solid #9aafc0;
+            padding: 8px 16px; border-radius: 40px; font-size: 0.85rem;
+            color: #1e4459; cursor: pointer; backdrop-filter: blur(4px);
+            transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none; font-weight: 450;
+        }
+        .btn i { font-size: 0.9rem; }
+        .btn:hover {
+            background: #7e96a8; color: white; border-color: #5a7488;
+        }
+        .btn-outline {
+            background: transparent; border: 1px solid #7e96a8;
+        }
+        .btn-outline:hover {
+            background: #7e96a8; color: white;
+        }
+
+        /* 模态框 (预览G代码) */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 30, 40, 0.3); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center; z-index: 999;
+        }
+        .modal-card {
+            max-width: 750px; width: 90%; max-height: 80vh;
+            background: #ecf3f9; border-radius: 36px; padding: 24px 28px;
+            box-shadow: 0 30px 50px rgba(20, 50, 70, 0.3);
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(16px);
+            display: flex; flex-direction: column;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-header h3 { font-weight: 400; color: #1a4459; }
+        .close-btn {
+            background: none; border: none; font-size: 1.8rem; cursor: pointer;
+            color: #3f6a82; opacity: 0.7;
+        }
+        pre {
+            background: #e3edf5; padding: 18px; border-radius: 20px;
+            overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;
+            font-family: 'Courier New', monospace; font-size: 0.9rem;
+            color: #153e52; max-height: 55vh; border: 1px solid #bed3e3;
+        }
+
+        /* 响应式 */
+        @media screen and (max-width: 650px) {
+            .gcode-card { flex-direction: column; align-items: flex-start; }
+            .card-actions { margin-left: 0; margin-top: 12px; width: 100%; justify-content: flex-end; }
+            .file-icon { margin-bottom: 6px; }
+        }
+        @media screen and (max-width: 480px) {
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+
+        /* 上传区域提示 (用于存放txt) */
+        .upload-note {
+            margin-top: 24px; font-size: 0.8rem; opacity: 0.5; text-align: right;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="ink-bg"></div>
+    <div class="content">
+        <!-- 头部 -->
+        <div class="top-bar">
+            <a href="industry.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回工业作品集</a>
+            <div class="page-title">
+                <i class="fas fa-tools"></i>
+                <h1>CNC · G代码库</h1>
+            </div>
+        </div>
+
+        <!-- 灰色工业说明 -->
+        <div class="gcode-info">
+        
+            <span>数控程序文件 (.txt) —— 点击预览查看G代码，或下载使用</span>
+            <i class="fas fa-download" style="margin-left: auto;"></i>
+        </div>
+
+        <!-- G代码卡片列表 (可自由增删) -->
+        <div class="gcode-list" id="gcodeListContainer">
+            <!-- 卡片示例1：通过JS动态生成也可以，但为了方便直接写静态，再通过data属性关联txt文件 -->
+            <!-- 使用data-file指向真实txt路径 -->
+        </div>
+
+        <!-- 说明：请将txt文件放在相应路径，文件名可自定义 -->
+        <div class="upload-note">
+            <i class="fas fa-folder-open"></i> G代码文件存放于目录中，点击预览即可查看。
+        </div>
+    </div>
+</div>
+
+<!-- 预览模态框 -->
+<div class="modal" id="previewModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-code"></i> <span id="modalFileName">G代码预览</span></h3>
+            <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <pre id="gcodeContent">正在加载...</pre>
+    </div>
+</div>
+
+<script>
+    // G代码文件数据配置 —— 您可以自由增删修改
+    const gcodeFiles = [
+        {
+            name: 'flange_milling.txt',
+            desc: '法兰盘铣削 · 粗精加工',
+            tags: ['铣削', 'FANUC'],
+            path: 'gcode/flange_milling.txt'
+        },
+        {
+            name: 'shaft_turning.txt',
+            desc: '阶梯轴车削 · 带螺纹循环',
+            tags: ['车削', 'G76'],
+            path: 'gcode/shaft_turning.txt'
+        },
+        {
+            name: 'pocket_contour.txt',
+            desc: '型腔轮廓加工 · 岛屿避让',
+            tags: ['铣削', '轮廓'],
+            path: 'gcode/pocket_contour.txt'
+        },
+        {
+            name: 'drilling_cycle.txt',
+            desc: '孔系加工 · G81/G83循环',
+            tags: ['钻孔', '深孔'],
+            path: 'gcode/drilling_cycle.txt'
+        },
+        {
+            name: '5axis_impeller.txt',
+            desc: '叶轮五轴加工 · 定向代码',
+            tags: ['五轴', 'Siemens'],
+            path: 'gcode/5axis_impeller.txt'
+        }
+    ];
+
+    const container = document.getElementById('gcodeListContainer');
+
+    // 渲染卡片
+    function renderCards() {
+        let html = '';
+        gcodeFiles.forEach((file, index) => {
+            html += `
+                <div class="gcode-card" data-index="${index}">
+                    <div class="file-icon">
+                        <i class="fas fa-file-code"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">
+                            ${file.name}
+                            ${file.tags.map(t => `<span class="badge">${t}</span>`).join('')}
+                        </div>
+                        <div class="file-desc">${file.desc}</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="previewFile('${file.path}', '${file.name}')">
+                            <i class="fas fa-eye"></i> 预览
+                        </button>
+                        <a href="${file.path}" download class="btn btn-outline">
+                            <i class="fas fa-download"></i> 下载
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    renderCards();
+
+    // 预览功能
+    const modal = document.getElementById('previewModal');
+    const modalFileName = document.getElementById('modalFileName');
+    const gcodeContent = document.getElementById('gcodeContent');
+
+    window.previewFile = function(filePath, fileName) {
+        modalFileName.textContent = fileName;
+        gcodeContent.textContent = '加载中...';
+        
+        // 尝试fetch txt文件
+        fetch(filePath)
+            .then(response => {
+                if (!response.ok) throw new Error('文件不存在或路径错误');
+                return response.text();
+            })
+            .then(text => {
+                gcodeContent.textContent = text;
+            })
+            .catch(err => {
+                // 若文件不存在，显示模拟内容并给出提示（因演示环境可能无真实文件）
+                gcodeContent.textContent = `; 示例G代码 (${fileName})\n; 实际文件请放置于 ${filePath}\n; ----------------------\nO1000\nG90 G54 G17 G40 G80\nG00 X0 Y0 S3000 M03\nG43 H01 Z50.\nG01 Z-5. F500.\nG01 X50. F800.\nY50.\nX0\nY0\nG00 Z50.\nM05\nM30\n%\n; (请将真实G代码文件放入对应路径)`;
+                console.warn('文件加载失败，显示示例内容。请确保文件存在:', filePath);
+            });
+        modal.style.display = 'flex';
+    };
+
+    window.closeModal = function() {
+        modal.style.display = 'none';
+    };
+
+    // 点击模态背景关闭
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+
+    // 按ESC关闭
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            closeModal();
+        }
+    });
+
+    // 若文件不存在时显示示例，同时允许直接下载（a标签download属性有效）
+    // 另外可以加一个后备: 若txt文件确实存在，则会正常展示。
+</script>
+
+<!-- 说明：您可将真实的G代码txt文件放在 gcode/ 目录下，或修改路径。若不使用fetch，直接下载也可。 -->
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>工业机器人 · 发那科 & 埃斯顿</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 水墨背景 */
+            background-color: #dcebf7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .page-wrapper {
+            max-width: 1500px;
+            width: 100%;
+            background: rgba(245, 248, 250, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 40px -12px rgba(30, 60, 80, 0.2), 
+                        0 4px 18px rgba(120, 140, 160, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(210, 220, 230, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ink-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .ink-bg::before {
+            content: ''; position: absolute; bottom: -30px; right: -20px;
+            width: 280px; height: 200px;
+            background: radial-gradient(ellipse at 70% 50%, rgba(140, 160, 180, 0.15) 0%, transparent 70%);
+            filter: blur(30px); border-radius: 50%;
+        }
+        .ink-bg::after {
+            content: ''; position: absolute; top: 10px; left: 5%;
+            width: 220px; height: 160px;
+            background: radial-gradient(circle at 20% 30%, rgba(190, 205, 220, 0.12) 0%, transparent 65%);
+            filter: blur(25px);
+        }
+
+        .content {
+            position: relative; z-index: 5;
+        }
+
+        /* 头部 */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.8rem; flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            color: #2c4b63; text-decoration: none; font-weight: 400;
+            background: rgba(230, 235, 240, 0.5); padding: 8px 18px;
+            border-radius: 60px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(180, 195, 210, 0.5); transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(210, 220, 230, 0.7); color: #1a3a4e;
+            border-color: #9aafc0; transform: translateX(-4px);
+        }
+        .page-title {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .page-title i {
+            font-size: 2.2rem; color: #5a6f7e; opacity: 0.9;
+        }
+        .page-title h1 {
+            font-weight: 350; font-size: 2.2rem; letter-spacing: 2px;
+            color: #1e4459; text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+            border-bottom: 1.5px solid rgba(100, 120, 140, 0.3); padding-bottom: 4px;
+        }
+
+        /* 左右两栏 */
+        .split-layout {
+            display: flex; gap: 28px; margin-top: 10px;
+        }
+        .robot-column {
+            flex: 1; min-width: 0;
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px);
+            border-radius: 32px; padding: 24px 22px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: inset 0 1px 4px rgba(255,255,255,0.6), 0 8px 18px -8px rgba(30,60,90,0.1);
+        }
+
+        .column-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+            border-bottom: 2px solid rgba(70,130,170,0.2); padding-bottom: 14px;
+        }
+        .column-header i {
+            font-size: 2.4rem; color: #2e6279;
+        }
+        .column-header h2 {
+            font-weight: 450; font-size: 1.9rem; color: #1e4459;
+        }
+        .tag-group {
+            display: flex; gap: 12px; margin-left: auto;
+        }
+        .tag {
+            background: #7e96a8; color: white; padding: 4px 16px;
+            border-radius: 30px; font-size: 0.8rem; font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* 发那科项目列表 */
+        .project-list {
+            display: flex; flex-direction: column; gap: 24px;
+        }
+        .project-item {
+            background: rgba(255,255,255,0.35); border-radius: 24px;
+            padding: 18px 20px; border: 1px solid rgba(200,215,230,0.7);
+            border-left: 6px solid #f9a826; /* 发那科黄 */
+        }
+        .project-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.3rem; font-weight: 550; color: #1a4357;
+            margin-bottom: 16px;
+        }
+        .file-group {
+            display: flex; flex-wrap: wrap; gap: 20px 30px;
+        }
+        .file-block {
+            min-width: 140px;
+        }
+        .file-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
+            opacity: 0.7; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+        }
+        .video-thumb {
+            display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.05);
+            padding: 6px 12px; border-radius: 30px; cursor: pointer;
+            border: 1px solid #b8cedd; transition: 0.2s;
+        }
+        .video-thumb:hover { background: #d4e2ee; }
+        .photo-strip {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
+        .photo-thumb {
+            width: 50px; height: 50px; background: #cbdae5; border-radius: 12px;
+            border: 1px solid white; object-fit: cover; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .tp-download {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #2a4d62; color: white; padding: 6px 16px;
+            border-radius: 30px; text-decoration: none; font-size: 0.8rem;
+            border: 1px solid #a2bed0; transition: 0.2s;
+        }
+        .tp-download i { color: #ffd966; }
+        .tp-download:hover { background: #1e3f54; }
+
+        /* 埃斯顿区域 (无具体项目) */
+        .estun-placeholder {
+            margin-top: 20px; background: rgba(220,230,240,0.3);
+            border-radius: 24px; padding: 28px 24px; text-align: center;
+            border: 1px dashed #9aafc0;
+        }
+        .estun-placeholder i {
+            font-size: 3rem; color: #5f7f94; opacity: 0.5; margin-bottom: 16px;
+        }
+        .placeholder-text {
+            color: #2a5a70; font-size: 1rem; margin-bottom: 10px;
+        }
+
+        /* 视频模态框 */
+        .video-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10,30,40,0.5); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center; z-index: 999;
+        }
+        .video-container {
+            max-width: 800px; width: 90%; background: #e1edf5; border-radius: 32px;
+            padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .video-container video {
+            width: 100%; border-radius: 20px; max-height: 70vh;
+        }
+        .close-video {
+            float: right; background: none; border: none; font-size: 1.8rem;
+            cursor: pointer; color: #1e4459; margin-bottom: 8px;
+        }
+
+        /* 响应式 */
+        @media screen and (max-width: 900px) {
+            .split-layout { flex-direction: column; }
+        }
+        @media screen and (max-width: 500px) {
+            .file-group { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="ink-bg"></div>
+    <div class="content">
+        <div class="top-bar">
+            <a href="industry.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回工业作品集</a>
+            <div class="page-title">
+                <i class="fas fa-robot"></i>
+                <h1>工业机器人 · 应用</h1>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            <!-- 左侧：发那科 FANUC -->
+            <div class="robot-column">
+                <div class="column-header">
+                    <i class="fas fa-cogs"></i>
+                    <h2>FANUC 发那科</h2>
+                    <div class="tag-group">
+                        <span class="tag">操作</span>
+                        <span class="tag">编程</span>
+                    </div>
+                </div>
+                <div class="project-list">
+                    <!-- 项目1 -->
+                    <div class="project-item">
+                        <div class="project-title">
+                            <i class="fas fa-box"></i> 项目一 · 码垛搬运
+                        </div>
+                        <div class="file-group">
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-video"></i> 演示视频</div>
+                                <div class="video-thumb" onclick="playVideo('videos/fanuc_pallet.mp4')">
+                                    <i class="fas fa-play-circle"></i> 码垛作业.mp4
+                                </div>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-file-code"></i> TP程序</div>
+                                <a href="programs/pallet.tp" class="tp-download" download>
+                                    <i class="fas fa-download"></i> pallet.tp
+                                </a>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-images"></i> 现场照片</div>
+                                <div class="photo-strip">
+                                    <img src="photos/fanuc1_1.jpg" class="photo-thumb" onclick="window.open('photos/fanuc1_1.jpg')" alt="照片1">
+                                    <img src="photos/fanuc1_2.jpg" class="photo-thumb" onclick="window.open('photos/fanuc1_2.jpg')" alt="照片2">
+                                    <img src="photos/fanuc1_3.jpg" class="photo-thumb" onclick="window.open('photos/fanuc1_3.jpg')" alt="照片3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 项目2 -->
+                    <div class="project-item">
+                        <div class="project-title">
+                            <i class="fas fa-wrench"></i> 项目二 · 焊接工作站
+                        </div>
+                        <div class="file-group">
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-video"></i> 演示视频</div>
+                                <div class="video-thumb" onclick="playVideo('videos/fanuc_weld.mp4')">
+                                    <i class="fas fa-play-circle"></i> 焊接轨迹.mp4
+                                </div>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-file-code"></i> TP程序</div>
+                                <a href="programs/weld.tp" class="tp-download" download>
+                                    <i class="fas fa-download"></i> weld.tp
+                                </a>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-images"></i> 现场照片</div>
+                                <div class="photo-strip">
+                                    <img src="photos/fanuc2_1.jpg" class="photo-thumb" onclick="window.open('photos/fanuc2_1.jpg')">
+                                    <img src="photos/fanuc2_2.jpg" class="photo-thumb" onclick="window.open('photos/fanuc2_2.jpg')">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 项目3 -->
+                    <div class="project-item">
+                        <div class="project-title">
+                            <i class="fas fa-paint-roller"></i> 项目三 · 涂胶应用
+                        </div>
+                        <div class="file-group">
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-video"></i> 演示视频</div>
+                                <div class="video-thumb" onclick="playVideo('videos/fanuc_glue.mp4')">
+                                    <i class="fas fa-play-circle"></i> 涂胶路径.mp4
+                                </div>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-file-code"></i> TP程序</div>
+                                <a href="programs/glue.tp" class="tp-download" download>
+                                    <i class="fas fa-download"></i> glue.tp
+                                </a>
+                            </div>
+                            <div class="file-block">
+                                <div class="file-label"><i class="fas fa-images"></i> 现场照片</div>
+                                <div class="photo-strip">
+                                    <img src="photos/fanuc3_1.jpg" class="photo-thumb" onclick="window.open('photos/fanuc3_1.jpg')">
+                                    <img src="photos/fanuc3_2.jpg" class="photo-thumb" onclick="window.open('photos/fanuc3_2.jpg')">
+                                    <img src="photos/fanuc3_3.jpg" class="photo-thumb" onclick="window.open('photos/fanuc3_3.jpg')">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top:16px; opacity:0.6; font-size:0.8rem;"><i class="far fa-file-archive"></i> 所有TP程序及视频、图片均为实际项目资料</p>
+            </div>
+
+            <!-- 右侧：埃斯顿 ESTUN -->
+            <div class="robot-column">
+                <div class="column-header">
+                    <i class="fas fa-industry"></i>
+                    <h2>ESTUN 埃斯顿</h2>
+                    <div class="tag-group">
+                        <span class="tag">操作</span>
+                        <span class="tag">页面布局</span>
+                    </div>
+                </div>
+                <!-- 无具体项目，展示技能标签及预留区 -->
+                <div style="padding: 10px 0;">
+                    <p style="margin-bottom: 16px; color: #1e4a60;">
+                        <i class="fas fa-check-circle" style="color: #2e8b6c;"></i> 
+                        埃斯顿机器人示教器操作
+                    </p>
+                        <p style="margin-bottom: 16px; color: #1e4a60;">
+                        <i class="fas fa-check-circle" style="color: #2e8b6c;"></i> 
+                        电脑桌面界面布局设计
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px;">
+                        <span class="tag" style="background: #6a8ca0;">示教</span>
+                    </div>
+                </div>
+
+
+
+                <!-- 也可加一个简单的“页面布局”示意，不涉及具体文件 -->
+                <div style="margin-top: 24px; background: rgba(255,255,240,0.2); border-radius: 20px; padding: 16px;">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                        <i class="fas fa-desktop"></i> <span style="font-weight:500;">示教器使用</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; opacity:0.7;">
+                        <span>▪ 状态栏</span><span>▪ 菜单导航</span>
+                        <span>▪ 程序编辑区</span><span>▪ 快捷按键区</span>
+                        <span>▪ 坐标显示</span><span>▪ 报警信息</span><span>▪ 简单故障处理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 视频播放模态框 -->
+<div class="video-modal" id="videoModal" onclick="closeVideoModal(event)">
+    <div class="video-container" onclick="event.stopPropagation()">
+        <button class="close-video" onclick="closeVideoModal()"><i class="fas fa-times"></i></button>
+        <video id="modalVideo" controls autoplay>
+            <source src="" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+    </div>
+</div>
+
+<script>
+    const videoModal = document.getElementById('videoModal');
+    const modalVideo = document.getElementById('modalVideo');
+
+    window.playVideo = function(videoSrc) {
+        modalVideo.src = videoSrc;
+        videoModal.style.display = 'flex';
+        modalVideo.load();
+        modalVideo.play();
+    };
+
+    window.closeVideoModal = function(event) {
+        if (!event || event.target === videoModal || event.target.classList.contains('close-video')) {
+            videoModal.style.display = 'none';
+            modalVideo.pause();
+            modalVideo.src = '';
+        }
+    };
+
+    // ESC关闭
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && videoModal.style.display === 'flex') {
+            closeVideoModal();
+        }
+    });
+
+    // 图片点击已在onclick中打开新窗口，无需额外处理
+</script>
+
+<!-- 说明：请将视频、图片、tp程序放入对应目录，文件名可自行修改。 -->
+</body>
+</html>

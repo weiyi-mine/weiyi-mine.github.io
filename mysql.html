@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MySQL · 数据库设计作品</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 水墨背景 */
+            background-color: #dcebf7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .page-wrapper {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(245, 248, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 40px -12px rgba(60, 80, 120, 0.2), 
+                        0 4px 18px rgba(120, 140, 180, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(200, 210, 240, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ink-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .ink-bg::before {
+            content: ''; position: absolute; bottom: -30px; right: -20px;
+            width: 280px; height: 200px;
+            background: radial-gradient(ellipse at 70% 50%, rgba(100, 130, 180, 0.12) 0%, transparent 70%);
+            filter: blur(30px); border-radius: 50%;
+        }
+        .ink-bg::after {
+            content: ''; position: absolute; top: 10px; left: 5%;
+            width: 220px; height: 160px;
+            background: radial-gradient(circle at 20% 30%, rgba(140, 170, 210, 0.1) 0%, transparent 65%);
+            filter: blur(25px);
+        }
+
+        .content {
+            position: relative; z-index: 5;
+        }
+
+        /* 头部 */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.8rem; flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            color: #2c4b6e; text-decoration: none; font-weight: 400;
+            background: rgba(230, 235, 250, 0.5); padding: 8px 18px;
+            border-radius: 60px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(170, 185, 220, 0.5); transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(210, 220, 245, 0.7); color: #1a3a5e;
+            border-color: #9aafd0; transform: translateX(-4px);
+        }
+        .page-title {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .page-title i {
+            font-size: 2.2rem; color: #3e6e99; opacity: 0.9;
+        }
+        .page-title h1 {
+            font-weight: 350; font-size: 2.2rem; letter-spacing: 2px;
+            color: #1e4460; text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+            border-bottom: 1.5px solid rgba(70, 100, 150, 0.3); padding-bottom: 4px;
+        }
+
+        /* 说明条 */
+        .db-banner {
+            margin-bottom: 32px; display: flex; align-items: center; gap: 15px;
+            flex-wrap: wrap; background: rgba(200, 215, 240, 0.2);
+            padding: 10px 22px; border-radius: 48px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(140, 160, 210, 0.3);
+        }
+        .db-banner i { color: #4a7aac; }
+
+        /* 项目网格 (三个卡片) */
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 28px; margin-bottom: 20px;
+        }
+
+        .mysql-card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(8px); border-radius: 32px;
+            padding: 24px 20px 22px;
+            border: 1px solid rgba(200, 215, 240, 0.8);
+            border-top: 6px solid #00758f; /* MySQL 蓝 */
+            box-shadow: 0 12px 24px -10px rgba(50, 80, 120, 0.15);
+            transition: 0.2s; display: flex; flex-direction: column;
+        }
+        .mysql-card:hover {
+            transform: translateY(-6px); background: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 20px 30px -12px rgba(60, 90, 140, 0.2);
+        }
+
+        .card-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+        }
+        .card-icon {
+            font-size: 2.2rem; color: #00758f; background: #d4e6f0;
+            width: 52px; height: 52px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-title {
+            font-size: 1.5rem; font-weight: 550; color: #1d3e62;
+        }
+
+        .er-preview {
+            width: 100%; height: 130px; background: #eef3fa;
+            border-radius: 18px; margin-bottom: 16px; overflow: hidden;
+            border: 1px solid #bed2e8; cursor: pointer; position: relative;
+        }
+        .er-preview img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .er-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,60,90,0.2); display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.2s; color: white; font-size: 1.5rem;
+        }
+        .er-preview:hover .er-overlay { opacity: 1; }
+
+        .card-desc {
+            font-size: 0.9rem; opacity: 0.8; margin-bottom: 16px; line-height: 1.5;
+        }
+
+        .sql-snippet {
+            background: #1e2e3c; color: #cbdae6; padding: 12px 14px;
+            border-radius: 16px; font-family: 'Courier New', monospace;
+            font-size: 0.75rem; line-height: 1.6; margin-bottom: 18px;
+            overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+            border: 1px solid #9bb7d0; max-height: 110px;
+        }
+
+        .tech-tags {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;
+        }
+        .tech-tag {
+            background: #d0dceb; padding: 4px 12px; border-radius: 30px;
+            font-size: 0.7rem; color: #1e4460;
+        }
+
+        .card-actions {
+            display: flex; gap: 12px; margin-top: auto;
+        }
+        .btn {
+            background: rgba(210, 225, 245, 0.7); border: 1px solid #7a9bc0;
+            padding: 10px 16px; border-radius: 40px; font-size: 0.85rem;
+            color: #1e4460; cursor: pointer; backdrop-filter: blur(4px);
+            transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+            text-decoration: none; font-weight: 450; flex: 1; justify-content: center;
+        }
+        .btn i { font-size: 0.9rem; }
+        .btn:hover {
+            background: #3e6e99; color: white; border-color: #285577;
+        }
+        .btn-outline { background: transparent; }
+
+        /* 灯箱 */
+        .lightbox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center; z-index: 999;
+        }
+        .lightbox img {
+            max-width: 90%; max-height: 85vh; border-radius: 24px;
+            border: 4px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        /* 响应式 */
+        @media screen and (max-width: 900px) {
+            .projects-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media screen and (max-width: 600px) {
+            .projects-grid { grid-template-columns: 1fr; }
+            .page-wrapper { padding: 1.8rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="ink-bg"></div>
+    <div class="content">
+        <div class="top-bar">
+            <a href="data.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回数据作品集</a>
+            <div class="page-title">
+                <i class="fas fa-database"></i>
+                <h1>MySQL 数据库设计</h1>
+            </div>
+        </div>
+
+        <div class="db-banner">
+            <i class="fas fa-table"></i>
+            <span>ER建模 · 存储过程 · 查询优化 —— 三个典型数据库项目</span>
+            <i class="fas fa-code" style="margin-left:auto;"></i>
+        </div>
+
+        <!-- 三个 MySQL 项目卡片 -->
+        <div class="projects-grid">
+            <!-- 项目1: 电商订单数据库 -->
+            <div class="mysql-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="card-title">电商订单系统</div>
+                </div>
+                <div class="er-preview" onclick="openLightbox('images/ecommerce_er.jpg')">
+                    <img src="images/ecommerce_er.jpg" alt="ER图" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22130%22%3E%3Crect%20width%3D%22300%22%20height%3D%22130%22%20fill%3D%22%23b8cee4%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2270%22%20font-size%3D%2214%22%20text-anchor%3D%22middle%22%20fill%3D%22%231e3f60%22%3E%E7%94%B5%E5%95%86%20ER%20%E5%9B%BE%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                    <div class="er-overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+                <div class="card-desc">用户、商品、订单、支付表，支持高并发读写。包含分区表与索引优化。</div>
+                <div class="sql-snippet">
+-- 订单汇总查询 (带索引优化)<br>
+SELECT c.name, SUM(o.total) AS amount<br>
+FROM orders o JOIN customer c ON o.cust_id = c.id<br>
+WHERE o.create_time >= '2025-01-01'<br>
+GROUP BY c.id HAVING amount > 1000;
+                </div>
+                <div class="tech-tags">
+                    <span class="tech-tag">分区表</span>
+                    <span class="tech-tag">复合索引</span>
+                    <span class="tech-tag">事务隔离</span>
+                </div>
+                <div class="card-actions">
+                    <a href="sql/ecommerce.sql" class="btn" download><i class="fas fa-download"></i> SQL脚本</a>
+                    <button class="btn btn-outline" onclick="alert('包含建表、触发器、样例数据。')"><i class="fas fa-info-circle"></i> 说明</button>
+                </div>
+            </div>
+
+            <!-- 项目2: 物联网时序数据库 -->
+            <div class="mysql-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-microchip"></i></div>
+                    <div class="card-title">物联网传感器库</div>
+                </div>
+                <div class="er-preview" onclick="openLightbox('images/iot_er.jpg')">
+                    <img src="images/iot_er.jpg" alt="ER图" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22130%22%3E%3Crect%20width%3D%22300%22%20height%3D%22130%22%20fill%3D%22%23b2c6dd%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2270%22%20font-size%3D%2214%22%20text-anchor%3D%22middle%22%20fill%3D%22%231d3a5a%22%3E%E7%89%A9%E8%81%94%E7%BD%91%20ER%20%E5%9B%BE%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                    <div class="er-overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+                <div class="card-desc">设备注册、实时数据表（分区按月），每小时千万级写入。使用事件调度自动清理。</div>
+                <div class="sql-snippet">
+-- 创建按月分区表<br>
+CREATE TABLE sensor_data (<br>
+  id BIGINT, device_id INT, value FLOAT,<br>
+  ts DATETIME NOT NULL<br>
+) PARTITION BY RANGE (TO_DAYS(ts)) (...);
+                </div>
+                <div class="tech-tags">
+                    <span class="tech-tag">表分区</span>
+                    <span class="tech-tag">事件调度</span>
+                    <span class="tech-tag">批量插入</span>
+                </div>
+                <div class="card-actions">
+                    <a href="sql/iot_sensor.sql" class="btn" download><i class="fas fa-download"></i> SQL脚本</a>
+                    <button class="btn btn-outline" onclick="alert('包含分区管理、归档存储过程。')"><i class="fas fa-info-circle"></i> 说明</button>
+                </div>
+            </div>
+
+            <!-- 项目3: 学生选课系统 -->
+            <div class="mysql-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="card-title">学生选课系统</div>
+                </div>
+                <div class="er-preview" onclick="openLightbox('images/student_er.jpg')">
+                    <img src="images/student_er.jpg" alt="ER图" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22130%22%3E%3Crect%20width%3D%22300%22%20height%3D%22130%22%20fill%3D%22%23b0c4dd%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2270%22%20font-size%3D%2214%22%20text-anchor%3D%22middle%22%20fill%3D%22%231d3a60%22%3E%E9%80%89%E8%AF%BE%20ER%20%E5%9B%BE%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                    <div class="er-overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+                <div class="card-desc">学生、课程、教师、选课关系，包含成绩管理。使用视图简化查询，触发器保证数据一致性。</div>
+                <div class="sql-snippet">
+-- 触发器：选课时检查容量<br>
+CREATE TRIGGER check_capacity BEFORE INSERT ON enrollment<br>
+FOR EACH ROW<br>
+BEGIN<br>
+  DECLARE cap INT;<br>
+  SELECT capacity INTO cap FROM course WHERE id=NEW.course_id;<br>
+  IF (SELECT COUNT(*) FROM enrollment WHERE course_id=NEW.course_id) >= cap THEN<br>
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '课程已满';<br>
+  END IF;<br>
+END;
+                </div>
+                <div class="tech-tags">
+                    <span class="tech-tag">触发器</span>
+                    <span class="tech-tag">视图</span>
+                    <span class="tech-tag">外键约束</span>
+                </div>
+                <div class="card-actions">
+                    <a href="sql/student_course.sql" class="btn" download><i class="fas fa-download"></i> SQL脚本</a>
+                    <button class="btn btn-outline" onclick="alert('包含建表、触发器、函数及测试数据。')"><i class="fas fa-info-circle"></i> 说明</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: right; opacity: 0.5; font-size: 0.8rem;">
+            <i class="fas fa-key"></i> 所有SQL脚本兼容 MySQL 8.0+ · 点击ER图可放大
+        </div>
+    </div>
+</div>
+
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="ER图预览">
+</div>
+
+<script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    window.openLightbox = function(src) {
+        lightboxImg.src = src;
+        lightbox.style.display = 'flex';
+    };
+
+    window.closeLightbox = function() {
+        lightbox.style.display = 'none';
+        lightboxImg.src = '';
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
+
+<!-- 说明：请将ER图放入 images/ 文件夹，SQL文件放入 sql/ 文件夹，文件名可自定义。 -->
+</body>
+</html>
