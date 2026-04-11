@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SolidWorks · 机械设计作品</title>
+    <!-- 图标库 & 3D模型查看器 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 延续淡蓝色水墨画背景 */
+            background-color: #dcebf7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 主容器 */
+        .page-wrapper {
+            max-width: 1600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.2rem 2rem;
+            box-shadow: 0 20px 40px -12px rgba(30, 70, 100, 0.2), 
+                        0 4px 18px rgba(140, 180, 210, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ink-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .ink-bg::before {
+            content: '';
+            position: absolute; bottom: -30px; right: -20px;
+            width: 280px; height: 200px;
+            background: radial-gradient(ellipse at 70% 50%, rgba(160,200,225,0.18) 0%, transparent 70%);
+            filter: blur(30px); border-radius: 50%;
+        }
+        .ink-bg::after {
+            content: '';
+            position: absolute; top: 10px; left: 5%;
+            width: 220px; height: 160px;
+            background: radial-gradient(circle at 20% 30%, rgba(210,230,250,0.15) 0%, transparent 65%);
+            filter: blur(25px);
+        }
+
+        .content {
+            position: relative; z-index: 5;
+        }
+
+        /* 头部导航 */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.8rem; flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 10px;
+            color: #1f5a78; text-decoration: none; font-weight: 400;
+            background: rgba(255, 255, 255, 0.3); padding: 8px 18px;
+            border-radius: 60px; backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4); transition: all 0.2s;
+        }
+        .back-link i { font-size: 0.9rem; opacity: 0.8; }
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.5); color: #0e3b4f;
+            border-color: rgba(140, 190, 220, 0.5); transform: translateX(-4px);
+        }
+        .page-title {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .page-title i {
+            font-size: 2.2rem; color: #3a6d8c; opacity: 0.9;
+        }
+        .page-title h1 {
+            font-weight: 350; font-size: 2.2rem; letter-spacing: 2px;
+            color: #1e4459; text-shadow: 2px 2px 8px rgba(255,255,255,0.5);
+            border-bottom: 1.5px solid rgba(70,130,160,0.3); padding-bottom: 4px;
+        }
+
+        /* 左右两栏布局 */
+        .split-layout {
+            display: flex; gap: 24px; margin-top: 10px;
+        }
+        .project-column {
+            flex: 1; min-width: 0; /* 防止溢出 */
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+            border-radius: 32px; padding: 24px 20px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: inset 0 1px 4px rgba(255,255,255,0.6), 0 8px 18px -8px rgba(30,60,90,0.1);
+            display: flex; flex-direction: column;
+            max-height: 85vh; overflow-y: auto;
+        }
+        /* 自定义滚动条 */
+        .project-column::-webkit-scrollbar { width: 6px; }
+        .project-column::-webkit-scrollbar-thumb { background: rgba(90,140,170,0.3); border-radius: 10px; }
+
+        .project-header {
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 2px solid rgba(70,130,170,0.2);
+            padding-bottom: 16px; margin-bottom: 18px;
+        }
+        .project-header i {
+            font-size: 2rem; color: #2e6279; background: rgba(255,255,255,0.4);
+            padding: 8px; border-radius: 18px;
+        }
+        .project-header h2 {
+            font-weight: 450; font-size: 1.8rem; color: #1e4459;
+        }
+
+        /* 步骤列表 */
+        .steps-section {
+            margin-bottom: 20px;
+        }
+        .section-label {
+            font-weight: 500; margin-bottom: 10px; color: #1f4b63;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .steps-list {
+            list-style: none; padding-left: 6px;
+        }
+        .steps-list li {
+            margin-bottom: 8px; display: flex; gap: 10px;
+        }
+        .steps-list i {
+            color: #3a7b9a; font-size: 0.9rem; margin-top: 4px;
+        }
+
+        /* 视频 */
+        .video-container {
+            margin-bottom: 20px;
+        }
+        video {
+            width: 100%; border-radius: 20px; background: #0001;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 6px 14px rgba(30,60,80,0.1);
+        }
+
+        /* 图片画廊 (渲染图/爆炸图/工程图) */
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            margin-bottom: 20px;
+        }
+        .gallery-item {
+            background: rgba(255,255,255,0.35); border-radius: 18px;
+            padding: 8px 8px 4px; border: 1px solid rgba(255,255,255,0.7);
+            text-align: center; cursor: pointer; transition: 0.15s;
+        }
+        .gallery-item:hover {
+            background: rgba(255,255,255,0.6); transform: scale(1.02);
+        }
+        .gallery-item img {
+            width: 100%; height: 100px; object-fit: cover;
+            border-radius: 12px; border: 1px solid #fff;
+        }
+        .gallery-caption {
+            font-size: 0.7rem; margin-top: 5px; color: #1f4b63;
+        }
+
+        /* 3D模型查看器 */
+        model-viewer {
+            width: 100%; height: 200px; background: #eef3f8;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.8);
+            margin-bottom: 20px; --poster-color: transparent;
+        }
+
+        /* 设计说明 */
+        .description-box {
+            background: rgba(255,255,255,0.3); backdrop-filter: blur(4px);
+            padding: 16px 18px; border-radius: 24px; border-left: 4px solid #3a7b9a;
+            font-size: 0.9rem; line-height: 1.6; color: #153e52;
+            margin-top: auto;
+        }
+
+        /* 响应式 */
+        @media screen and (max-width: 900px) {
+            .split-layout { flex-direction: column; }
+            .project-column { max-height: none; overflow-y: visible; }
+        }
+        @media screen and (max-width: 500px) {
+            .page-wrapper { padding: 1.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; }
+            .gallery-item img { height: auto; max-height: 140px; }
+        }
+
+        /* 点击图片放大简单lightbox (利用新窗口, 也可用modal, 这里简化为新窗口) */
+        .gallery-item { cursor: zoom-in; }
+        .footnote {
+            margin-top: 18px; text-align: right; opacity: 0.6;
+            font-size: 0.8rem; color: #1f556e;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="ink-bg"></div>
+    <div class="content">
+        <!-- 头部 -->
+        <div class="top-bar">
+            <a href="industry.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回工业作品集</a>
+            <div class="page-title">
+                <i class="fas fa-cube"></i>
+                <h1>SolidWorks 设计作品</h1>
+            </div>
+        </div>
+
+        <!-- 左右双栏 -->
+        <div class="split-layout">
+            <!-- 左侧：八缸发动机搭建 -->
+            <div class="project-column">
+                <div class="project-header">
+                    <i class="fas fa-car-engine"></i>
+                    <h2>八缸发动机搭建</h2>
+                </div>
+                
+                <!-- 关键步骤 -->
+                <div class="steps-section">
+                    <div class="section-label"><i class="fas fa-list-check"></i> 关键搭建步骤</div>
+                    <ul class="steps-list">
+                        <li><i class="fas fa-circle-check"></i> <span>1. 曲轴箱与气缸体装配定位</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>2. 活塞连杆组与曲轴配合</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>3. 配气机构（凸轮轴、气门）安装</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>4. 正时链条/皮带张紧与对正</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>5. 进排气歧管及涡轮增压器装配</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>6. 整体干涉检查与运动仿真</span></li>
+                    </ul>
+                </div>
+
+                <!-- 演示视频 -->
+                <div class="video-container">
+                    <div class="section-label"><i class="fas fa-video"></i> 爆炸图演示视频</div>
+                    <video controls poster="engine_poster.jpg">
+                        <source src="爆炸动画1.mp4" type="video/mp4">
+                        您的浏览器不支持视频标签，请下载查看。
+                    </video>
+                    <div style="font-size:0.75rem; margin-top:4px; opacity:0.7;">八缸发动机装配动画（仅为学习展示）</div>
+                </div>
+
+                <!-- 图片画廊：高清渲染图 / 爆炸视图 / 工程图纸 -->
+                <div class="section-label"><i class="fas fa-images"></i> 视图资料</div>
+                <div class="gallery-grid">
+                    <!-- 渲染图1 -->
+                    <div class="gallery-item" onclick="window.open('engine_render1.jpg','_blank')">
+                        <img src="engine_render1.jpg" alt="渲染图1">
+                        <div class="gallery-caption">渲染图 角度①</div>
+                    </div>
+                    <!-- 渲染图2 -->
+                    <div class="gallery-item" onclick="window.open('engine_render2.jpg','_blank')">
+                        <img src="engine_render2.jpg" alt="渲染图2">
+                        <div class="gallery-caption">渲染图 角度②</div>
+                    </div>
+                    <!-- 爆炸视图 -->
+                    <div class="gallery-item" onclick="window.open('engine_explode.jpg','_blank')">
+                        <img src="engine_explode.jpg" alt="爆炸视图">
+                        <div class="gallery-caption">爆炸视图</div>
+                    </div>
+                    <!-- 工程图纸1 -->
+                    <div class="gallery-item" onclick="window.open('engine_drawing1.jpg','_blank')">
+                        <img src="engine_drawing1.jpg" alt="工程图1">
+                        <div class="gallery-caption">工程图 · 总装</div>
+                    </div>
+                    <!-- 工程图纸2 -->
+                    <div class="gallery-item" onclick="window.open('engine_drawing2.jpg','_blank')">
+                        <img src="engine_drawing2.jpg" alt="工程图2">
+                        <div class="gallery-caption">零件图标注</div>
+                    </div>
+                    <!-- 可再加一个角度 -->
+                    <div class="gallery-item" onclick="window.open('engine_render3.jpg','_blank')">
+                        <img src="engine_render3.jpg" alt="剖面渲染">
+                        <div class="gallery-caption">剖面展示</div>
+                    </div>
+                </div>
+
+                <!-- 设计说明 -->
+                <div class="description-box">
+                    <i class="fas fa-pen-fade" style="margin-right: 8px;"></i>
+                    <strong>说明：</strong>仅为学习展示。八缸V型发动机，排量4.0L，采用双涡轮增压。难点在于曲轴连杆机构的动平衡与正时系统精确配合。通过运动仿真优化了气门升程曲线，并使用有限元分析校核关键零部件强度。
+                </div>
+            </div>
+
+            <!-- 右侧：智能仿真平台搭建 -->
+            <div class="project-column">
+                <div class="project-header">
+                    <i class="fas fa-robot"></i>
+                    <h2>智能仿真平台搭建（搭建中）</h2>
+                </div>
+                
+                <!-- 关键步骤 -->
+                <div class="steps-section">
+                    <div class="section-label"><i class="fas fa-list-check"></i> 关键搭建步骤</div>
+                    <ul class="steps-list">
+                        <li><i class="fas fa-circle-check"></i> <span>1. 六轴机器人底座与关节模组装配</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>2. 末端执行器（气动夹爪）安装</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>3. 传送带与传感器布局设计</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>4. 控制柜及电气布线三维布置</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>5. 虚拟调试与路径规划仿真</span></li>
+                        <li><i class="fas fa-circle-check"></i> <span>6. 碰撞检测与工作空间优化</span></li>
+                    </ul>
+                </div>
+
+                <!-- 演示视频 -->
+                <div class="video-container">
+                    <div class="section-label"><i class="fas fa-video"></i> 演示视频</div>
+                    <video controls poster="platform_poster.jpg">
+                        <source src="platform_simulation.mp4" type="video/mp4">
+                        您的浏览器不支持视频标签。
+                    </video>
+                    <div style="font-size:0.75rem; margin-top:4px; opacity:0.7;">仅为学习展示</div>
+                </div>
+
+                <!-- 图片画廊 -->
+                <div class="section-label"><i class="fas fa-images"></i> 视图资料</div>
+                <div class="gallery-grid">
+                    <div class="gallery-item" onclick="window.open('platform_render1.jpg','_blank')">
+                        <img src="platform_render1.jpg" alt="渲染图">
+                        <div class="gallery-caption">渲染图 ①</div>
+                    </div>
+                    <div class="gallery-item" onclick="window.open('platform_render2.jpg','_blank')">
+                        <img src="platform_render2.jpg" alt="渲染图2">
+                        <div class="gallery-caption">渲染图 ②</div>
+                    </div>
+                    <div class="gallery-item" onclick="window.open('platform_explode.jpg','_blank')">
+                        <img src="platform_explode.jpg" alt="爆炸视图">
+                        <div class="gallery-caption">爆炸视图</div>
+                    </div>
+                    <div class="gallery-item" onclick="window.open('platform_drawing1.jpg','_blank')">
+                        <img src="platform_drawing1.jpg" alt="工程图">
+                        <div class="gallery-caption">总装图</div>
+                    </div>
+                    <div class="gallery-item" onclick="window.open('platform_drawing2.jpg','_blank')">
+                        <img src="platform_drawing2.jpg" alt="气动原理">
+                        <div class="gallery-caption">气路图</div>
+                    </div>
+                    <div class="gallery-item" onclick="window.open('platform_layout.jpg','_blank')">
+                        <img src="platform_layout.jpg" alt="布局图">
+                        <div class="gallery-caption">工作站布局</div>
+                    </div>
+                </div>
+                <!-- 设计说明 -->
+                <div class="description-box">
+                    <i class="fas fa-pen-fade" style="margin-right: 8px;"></i>
+                    <strong>说明：</strong>仅为学习展示。该平台集成了KUKA KR10机器人、视觉引导及传送带系统。设计难点在于工作空间紧凑，通过多次布局迭代及碰撞检测优化了机器人姿态。工程图包含气动回路与电气互连图，并制作了轻量化GLB模型用于网页展示。
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部作品总结 -->
+        <div class="footnote">
+            <i class="fas fa-cog"></i> 作品展示：高清渲染 / 爆炸视图 /  视频 —— 体现全流程搭建能力
+        </div>
+    </div>
+</div>
+
+<!-- 简单说明：请将对应的图片、视频、GLB文件放入目录并替换文件名。图片点击可放大查看。 -->
+</body>
+</html>
