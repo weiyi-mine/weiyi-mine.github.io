@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>竞赛获奖 · 荣誉墙</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            /* 延续淡蓝色水墨画背景 */
+            background-color: #dcebf7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, rgba(200, 225, 245, 0.1) 40%, transparent 60%),
+                radial-gradient(circle at 90% 75%, rgba(170, 210, 240, 0.35) 0%, rgba(220, 240, 255, 0.2) 50%, transparent 70%),
+                radial-gradient(circle at 30% 85%, rgba(140, 190, 230, 0.25) 0%, transparent 55%),
+                repeating-linear-gradient(45deg, rgba(150, 180, 210, 0.05) 0px, rgba(150, 180, 210, 0.05) 2px, transparent 2px, transparent 8px),
+                radial-gradient(circle at 70% 15%, rgba(255, 255, 255, 0.7) 0%, rgba(190, 220, 245, 0.15) 35%, transparent 60%),
+                radial-gradient(circle at 45% 60%, rgba(160, 200, 235, 0.2) 0%, transparent 50%);
+            background-blend-mode: overlay, normal, normal, normal, normal, normal;
+            backdrop-filter: blur(1px);
+            color: #1a3b4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 主卡片容器 */
+        .page-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 20px 40px -12px rgba(30, 70, 100, 0.2), 
+                        0 4px 18px rgba(140, 180, 210, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 水墨装饰层 */
+        .ink-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .ink-bg::before {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            right: -20px;
+            width: 280px;
+            height: 200px;
+            background: radial-gradient(ellipse at 70% 50%, rgba(160,200,225,0.18) 0%, transparent 70%);
+            filter: blur(30px);
+            border-radius: 50%;
+        }
+        .ink-bg::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 5%;
+            width: 220px;
+            height: 160px;
+            background: radial-gradient(circle at 20% 30%, rgba(210,230,250,0.15) 0%, transparent 65%);
+            filter: blur(25px);
+        }
+
+        /* 内容区 */
+        .content {
+            position: relative;
+            z-index: 5;
+        }
+
+        /* 头部导航 */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #1f5a78;
+            text-decoration: none;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 18px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.2s;
+        }
+        .back-link i { font-size: 0.9rem; opacity: 0.8; }
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: #0e3b4f;
+            border-color: rgba(140, 190, 220, 0.5);
+            transform: translateX(-4px);
+        }
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-title i {
+            font-size: 2.2rem;
+            color: #c28f1f;
+            opacity: 0.9;
+            filter: drop-shadow(0 2px 6px rgba(180, 140, 20, 0.2));
+        }
+        .page-title h1 {
+            font-weight: 350;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: #1e4459;
+            text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.5);
+            border-bottom: 1.5px solid rgba(200, 160, 40, 0.3);
+            padding-bottom: 4px;
+        }
+
+        /* 图例说明 (国奖/省奖) */
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 22px;
+            border-radius: 48px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: #1e4b61;
+        }
+        .color-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .badge-national {
+            background: linear-gradient(145deg, #f5d742, #e6b422);
+            border: 1px solid #d4a017;
+        }
+        .badge-provincial {
+            background: linear-gradient(145deg, #b0c7db, #8fafc9);
+            border: 1px solid #6d8eaa;
+        }
+        .legend i {
+            margin-right: 4px;
+            opacity: 0.7;
+        }
+
+        /* 卡片网格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 奖项卡片 */
+        .award-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 22px 12px 18px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 20px -8px rgba(30, 70, 100, 0.2);
+            transition: all 0.25s ease;
+            color: #1e3a4b;
+        }
+        .award-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 28px -12px rgba(40, 90, 130, 0.3);
+            border-color: rgba(255, 245, 200, 0.8);
+        }
+        /* 国奖卡片颜色 (金色/暖黄) */
+        .card-national {
+            background: linear-gradient(145deg, rgba(255, 245, 200, 0.7), rgba(250, 225, 140, 0.5));
+            border-left: 6px solid #e6b422;
+        }
+        /* 省奖卡片颜色 (银蓝/淡紫灰) */
+        .card-provincial {
+            background: linear-gradient(145deg, rgba(220, 235, 250, 0.7), rgba(180, 205, 230, 0.5));
+            border-left: 6px solid #7b9eb3;
+        }
+
+        .card-icon {
+            font-size: 3.2rem;
+            margin-bottom: 14px;
+            color: #2a5a70;
+        }
+        .card-national .card-icon {
+            color: #b8860b;
+        }
+        .card-provincial .card-icon {
+            color: #3f7290;
+        }
+        .award-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+        .award-detail {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            margin-bottom: 10px;
+        }
+        .award-level {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(2px);
+        }
+        .card-national .award-level {
+            background: #e6b42240;
+            color: #7d5d0e;
+            border: 1px solid #d4a017;
+        }
+        .card-provincial .award-level {
+            background: #8fafc940;
+            color: #1e4e66;
+            border: 1px solid #6d8eaa;
+        }
+
+        /* 图片预览区域 */
+        .preview-section {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 20px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .preview-header i {
+            font-size: 1.6rem;
+            color: #b8860b;
+        }
+        .preview-header span {
+            font-weight: 350;
+            color: #1d4d63;
+            font-size: 1.1rem;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 24px;
+            padding: 16px;
+        }
+        #previewImage {
+            max-width: 100%;
+            max-height: 360px;
+            border-radius: 20px;
+            box-shadow: 0 12px 24px -8px rgba(20, 60, 90, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            object-fit: contain;
+            background: #fff2;
+            transition: opacity 0.2s;
+        }
+        .placeholder-text {
+            color: #386582;
+            font-style: italic;
+            opacity: 0.6;
+        }
+
+        /* 响应式 */
+        @media screen and (max-width: 700px) {
+            body { padding: 1rem 0.8rem; align-items: flex-start; }
+            .page-wrapper { padding: 1.8rem 1.5rem; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .page-title h1 { font-size: 1.8rem; }
+        }
+        @media screen and (max-width: 480px) {
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+        /* 当前选中卡片高亮 */
+        .award-card.active {
+            border: 3px solid #f5d742;
+            box-shadow: 0 0 0 3px rgba(230, 180, 34, 0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="ink-bg"></div>
+    
+    <div class="content">
+        <!-- 头部 -->
+        <div class="top-bar">
+            <a href="about.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回作品集</a>
+            <div class="page-title">
+                <i class="fas fa-trophy"></i>
+                <h1>竞赛获奖</h1>
+            </div>
+        </div>
+
+        <!-- 图例说明（国奖/省奖） -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-badge badge-national"></div>
+                <span><i class="fas fa-crown" style="color:#c9a227;"></i> 国奖 · 金色卡片</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-badge badge-provincial"></div>
+                <span><i class="fas fa-medal" style="color:#4f7d9c;"></i> 省奖 · 银蓝卡片</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-mouse-pointer"></i>
+                <span>点击卡片查看证书</span>
+            </div>
+        </div>
+
+        <!-- 六个卡片 (3国奖 + 3省奖，可自行增删) -->
+        <div class="cards-grid">
+            <!-- 国奖卡片1 -->
+            <div class="award-card card-national" data-award="national" data-img="国奖.jpg" data-name=">全国高校计算机能力挑战赛">
+                <div class="card-icon"><i class="fas fa-cubes"></i></div>
+                <div class="award-name">全国高校计算机能力挑战赛</div>
+                <div class="award-detail">国家级 · 二等奖</div>
+                <span class="award-level">国奖</span>
+            </div>
+            <!-- 国奖卡片2 -->
+            <div class="award-card card-national" data-award="national" data-img="数据统计.jpg" data-name="全国大学生统计科学与算法编程挑战赛">
+                <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="award-name">全国大学生统计科学与算法编程挑战赛</div>
+                <div class="award-detail">国家级 · 二等奖</div>
+                <span class="award-level">国奖</span>
+            </div>
+            <!-- 国奖卡片3 -->
+            <div class="award-card card-national" data-award="national" data-img="AIGC应用挑战赛.jpg" data-name="全国大学生高新技术竞赛">
+                <div class="card-icon"><i class="fas fa-crown"></i></div>
+                <div class="award-name">全国大学生高新技术竞赛</div>
+                <div class="award-detail">国家级 · 三等奖</div>
+                <span class="award-level">国奖</span>
+            </div>
+                       <!-- 国奖卡片4-->
+            <div class="award-card card-national" data-award="national" data-img="digitalCup.jpg" data-name="大学生物联网大赛">
+                <div class="card-icon"><i class="fas fa-crown"></i></div>
+                <div class="award-name">大学生物联网大赛</div>
+                <div class="award-detail">国家级 · 优秀奖</div>
+                <span class="award-level">国奖</span>
+            </div>
+            <!-- 省奖卡片1 -->
+            <div class="award-card card-provincial" data-award="provincial" data-img="智能体开发.jpg" data-name="蓝桥杯大赛">
+                <div class="card-icon"><i class="fas fa-laptop-code"></i></div>
+                <div class="award-name">蓝桥杯大赛</div>
+                <div class="award-detail">省级 · 三等奖</div>
+                <span class="award-level">省奖</span>
+            </div>
+
+        </div>
+
+        <!-- 图片预览区域 (点击卡片显示对应获奖图片) -->
+        <div class="preview-section">
+            <div class="preview-header">
+                <i class="fas fa-image"></i>
+                <span id="previewTitle">点击上方卡片查看获奖证书</span>
+            </div>
+            <div class="image-container">
+                <img id="previewImage" src="" alt="获奖证书预览" style="display: none;">
+                <div id="placeholderMsg" class="placeholder-text">
+                    <i class="fas fa-hand-pointer"></i> 选择一张证书查看
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // 获取元素
+        const cards = document.querySelectorAll('.award-card');
+        const previewImg = document.getElementById('previewImage');
+        const previewTitle = document.getElementById('previewTitle');
+        const placeholderMsg = document.getElementById('placeholderMsg');
+
+        // 默认隐藏图片，显示占位文字
+        function showPlaceholder() {
+            previewImg.style.display = 'none';
+            placeholderMsg.style.display = 'block';
+            previewTitle.textContent = '点击上方卡片查看获奖证书';
+        }
+
+        // 显示图片
+        function showImage(imgSrc, awardFullName) {
+            if (!imgSrc) {
+                showPlaceholder();
+                return;
+            }
+            previewImg.src = imgSrc;
+            previewImg.style.display = 'block';
+            placeholderMsg.style.display = 'none';
+            previewTitle.textContent = awardFullName || '获奖证书';
+            
+            // 如果图片加载失败，回退提示
+            previewImg.onerror = function() {
+                previewImg.style.display = 'none';
+                placeholderMsg.style.display = 'block';
+                placeholderMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> 图片未找到，请将证书图片放入目录';
+                previewTitle.textContent = '图片加载失败';
+            };
+            previewImg.onload = function() {
+                // 加载成功
+            };
+        }
+
+        // 移除所有卡片的active类
+        function removeActiveClass() {
+            cards.forEach(c => c.classList.remove('active'));
+        }
+
+        // 为每个卡片添加点击事件
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                const imgFile = this.dataset.img;          // 例如 "national1.jpg"
+                const awardName = this.dataset.name || this.querySelector('.award-name')?.textContent + ' ' + (this.querySelector('.award-detail')?.textContent || '');
+                const fullTitle = awardName || '获奖证书';
+                
+                // 高亮当前卡片
+                removeActiveClass();
+                this.classList.add('active');
+                
+                // 如果有图片文件名，则显示，否则占位
+                if (imgFile) {
+                    showImage(imgFile, fullTitle);
+                } else {
+                    showPlaceholder();
+                }
+            });
+        });
+
+        // 初始无选中，显示占位符
+        showPlaceholder();
+
+        // 可选：默认点击第一个卡片？不需要，让用户主动选择。
+        // 但为了让预览区不空，可以预加载一个？ 不必，更干净。
+        // 如果希望默认显示某个图片，可取消注释下一行：
+        // if(cards.length > 0) cards[0].click();
+    })();
+</script>
+
+<!-- 说明：图片文件名请替换为实际证书图片，例如 national1.jpg, provincial1.jpg 等，放在同目录下 -->
+</body>
+</html>

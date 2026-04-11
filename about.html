@@ -88,6 +88,33 @@
             border-bottom: 1.5px solid rgba(70, 130, 160, 0.2);
             padding-bottom: 6px;
         }
+        /*返回首页图形*/
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #1f5a78;
+            text-decoration: none;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 18px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.2s;
+            }
+        .back-link i {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            }
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: #0e3b4f;
+            border-color: rgba(140, 190, 220, 0.5);
+            transform: translateX(-4px);
+        }
+
+
 
         /* ----- 时间轴 (一条竖线) ----- */
         .timeline {
@@ -474,6 +501,10 @@
 
     <!-- 右侧：图形入口 · 获奖/证书/作品集 (点击跳转) -->
     <div class="showcase-section">
+
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回首页</a>
+
+    
        
         <div class="showcase-grid">
             <!-- 竞赛获奖 → competition.html -->
@@ -495,12 +526,12 @@
             </a>
 
             <!-- 推荐信 → recommendation.html -->
-            <a href="recommendation.html" class="showcase-card" target="_self">
+            <a href="tuijianxin.html" class="showcase-card" target="_self">
                 <div class="card-icon">
                     <i class="fas fa-envelope-open-text"></i>
                 </div>
                 <div class="card-title">推荐信</div>
-                <div class="card-sub">References</div>
+                <div class="card-sub">Reference</div>
             </a>
 
             <!-- 工业作品集 → industry.html -->
