@@ -234,78 +234,148 @@
     // 嵌入式项目数据 —— 四个已完成压缩包 + 一个构思中项目
     const projects = [
         {
-            name: '智能环境监测仪',
+            name: '智能环境监测与报警系统',
             status: 'completed',  // 已完成
-            description: '基于STM32F103，实时采集温湿度、空气质量，通过OLED显示并上传OneNET。',
-            sensors: ['DHT22 温湿度', 'MQ-135 空气质量'],
-            codeSnippet: `// DHT22读取示例
-uint8_t DHT_Read_Data(float *temp, float *humi) {
-    uint8_t buf[5];
-    DHT_Start();
-    if(DHT_Read_Buf(buf) == 0) {
-        *humi = (buf[0]*256 + buf[1])/10.0;
-        *temp = ((buf[2]&0x7F)*256 + buf[3])/10.0;
-        return 0;
+            description: '基于STM32G431RBT6,结合嵌入式开发板CT117-M4,完成智能环境监测与报警系统设计。通过监测环境温湿度，同时判断是否有人，从而使提醒人做下一步行动',
+            sensors: ['DHT11温湿度', 'HCSR501人体红外'],
+            codeSnippet: `// DHT11读取示例
+void dht11_sensor()
+{
+    static uint8_t last_status = 0xFF;
+    read_status = DHT11_Read(&temperature, &humidity);
+
+    if(read_status != last_status || read_status == 0) {
+        last_status = read_status;
+        
+        if(read_status == 0) {
+            sprintf((char*)lcdbuf, "Temp: %.1f C", temperature);
+            LCD_DisplayStringLine(Line5, (uint8_t*)lcdbuf);
+            
+            sprintf((char*)lcdbuf, "Humi: %.1f %%", humidity);
+            LCD_DisplayStringLine(Line6, (uint8_t*)lcdbuf);
+
+
+            if(temperature > TEMP_THRESHOLD || humidity > HUMI_THRESHOLD) {
+                alarm_active = 1;
+            } else {
+                alarm_active = 0;
+            }
+        } else {
+           sprintf((char*)lcdbuf, "DHT11 Error: %d", read_status);
+           LCD_DisplayStringLine(Line5, (uint8_t*)lcdbuf);
+				
+
+        }
     }
-    return 1;
-}`,
-            downloadLink: 'projects/env_monitor.zip',  // 压缩包路径
-            tags: ['STM32', 'HAL', 'Wi-Fi']
+}
+`
+,
+            downloadLink: 'autitheft.7z',  // 压缩包路径
+            tags: ['STM32', 'HAL']
         },
         {
-            name: '两轮自平衡小车',
+            name: '室内温度灯光报警系统',
             status: 'completed',
-            description: 'MPU6050姿态解算，PID控制电机，实现直立与蓝牙遥控。',
-            sensors: ['MPU6050 六轴', 'HC-SR04 超声波'],
-            codeSnippet: `// 互补滤波角度计算
-angle = 0.98 * (angle + gyroRate * dt) + 0.02 * accAngle;
-// PID 速度环与直立环
-balance_pwm = Kp_balance * angle + Kd_balance * gyro;
-velocity_pwm = Kp_vel * velocity_error + Ki_vel * velocity_integral;`,
-            downloadLink: 'projects/balance_car.zip',
-            tags: ['PID', '互补滤波', '蓝牙']
-        },
-        {
-            name: '物联网智能插座',
-            status: 'completed',
-            description: 'ESP32通过继电器控制通断，计量芯片HLW8032采集功率，支持MQTT远程控制。',
-            sensors: ['HLW8032 电能计量', 'DS18B20 温度'],
-            codeSnippet: `// HLW8032 串口解析
-if(serial_available()) {
-    uint8_t data = serial_read();
-    if(hlw_parse(data)) {
-        voltage = hlw.Voltage * 1.88;
-        current = hlw.Current * 0.33;
-        power = voltage * current;
+            description: 'STM32G431RBT6,LED灯光显示设计。通过监测室内环境温度，温度是否过高或过低，而发出特定的灯光，使人进行降温升温手段。进一步可连接家电，达到智能家居效果',
+            sensors: ['KY028温度', 'HCSR501人体'],
+            codeSnippet: `// 传感器与Led设计
+__IO uint32_t keyTick = 0;
+void Keyprocess(void)
+{
+    if (uwTick - keyTick < 10) return;
+    keyTick = uwTick;
+    
+    KeyRead();
+    if(Trg & 0x02)
+    {
+        LED_Control(0x00); 
+        LCD_Clear(White);
     }
-}`,
-            downloadLink: 'projects/smart_plug.zip',
-            tags: ['ESP32', 'MQTT', '电能计量']
+}
+    KY028_Status tempStatus = KY028_Read_Status();
+    if (tempStatus == KY028_TEMP_ABOVE_THRESHOLD) 
+    {
+        snprintf((char*)lcdbuf, sizeof(lcdbuf), "Temp: High! >28C");
+				 Fan_SetState(FAN_FORWARD);
+					HAL_Delay(3000);
+    }
+    else 
+    {
+        snprintf((char*)lcdbuf, sizeof(lcdbuf), "Temp: Normal");
+					 Fan_SetState(FAN_OFF);
+    }
+    LCD_DisplayStringLine(Line4, lcdbuf);
+    
+
+    HUMAN_Status humanStatus = HUMAN_Read_Status();
+    if (humanStatus == HUMAN_DETECTED) 
+    {
+        snprintf((char*)lcdbuf, sizeof(lcdbuf), "Human:have");
+				LED_Control(0xff);
+    }
+    else 
+    {
+        snprintf((char*)lcdbuf, sizeof(lcdbuf), "Human: Not");
+    }
+`,
+            downloadLink: 'inroom.7z',
+            tags: ['STM32','HAL', 'LED与按键交互设计']
         },
         {
-            name: '仓库安防巡检机器人',
+            name: '智能屏幕系统',
             status: 'completed',
-            description: '基于STM32与ROS通信，搭载激光雷达与烟雾传感器，实现自主巡逻与报警。',
-            sensors: ['TOF激光雷达', 'MQ-2 烟雾传感器'],
-            codeSnippet: `// 激光雷达数据解析 (简略)
-void lidar_callback(uint8_t *packet) {
-    uint16_t distance = (packet[3]<<8) | packet[2];
-    float angle = (packet[1] - 0xA0) * 0.5;
-    if(distance < 300) obstacle_flag = 1;
-}`,
-            downloadLink: 'projects/patrol_robot.zip',
-            tags: ['ROS', 'TOF', '电机驱动']
+            description: 'STM32G431RBT6,LCD显示屏个性设计。通过检测人的位置，LCD显示屏会发生变化。未来可用于智慧屏幕，当人到一定范围内屏幕自动开启并播放不同画面与视频，当无人时，屏幕进入自动待机模式，减少资源浪费',
+            sensors: ['HCSR501人体红外', '蜂鸣器'],
+            codeSnippet: `// 主函数节选示例
+void people_show()
+{
+	
+		LCD_DisplayStringLine(Line2,(unsigned char*)"   Guo Shengxi");
+		snprintf((char*)lcdbuf, sizeof(lcdbuf), "time: %02d:%02d:%02d", 
+             rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+    LCD_DisplayStringLine(Line7, lcdbuf);
+		
+		snprintf((char*)lcdbuf, sizeof(lcdbuf), "rtc:	%02d.%02d.%02d", 
+             rtc_date.Year, rtc_date.Month, rtc_date.Date);
+    LCD_DisplayStringLine(Line9, lcdbuf);
+
+
+    if(HCSR501_Detect()) 
+    {
+        led_show1();
+				LCD_DisplayStringLine(Line4,(unsigned char*)" Human is here!!!!!  ");
+				LCD_DrawRect(70,210,100,100);//draw rect
+				alarm_show();
+				i++;
+    } 
+    else 
+    {
+        LED_Control(0xff);
+        LCD_DisplayStringLine(Line5,(unsigned char*)" No human  ");
+				LCD_DrawCircle(120,160,150);//draw circle
+				alarm_close();
+				i=0;
+    }
+				if(i==0)
+		{
+			alarm_close();
+		
+		}
+	}`,
+            downloadLink: 'screenshow.7z',
+            tags: ['STM32', 'LCD设计', 'HAL','C语言']
         },
+
         {
-            name: '智能农业灌溉系统',
+            name: '基于多传感器的独居安全智能感知系统',
             status: 'planning',   // 构思中
-            description: '（构思中）计划采用LoRa组网，多点土壤湿度采集，太阳能供电，云端决策灌溉。',
-            sensors: ['电容式土壤湿度', '雨滴传感器'],
-            codeSnippet: `// 规划架构：STM32L0 + SX1278
+            description: '（构思中）多传感器融合与AI边缘计算,采用STM32F407芯片模块与K230AI视觉模块。',
+            sensors: ['OV5640摄像头', '门磁','SW-420震动','HLK-LD2410B雷达','HC-SR501人体','WIFI','4G短信与电话报警','...'],
+            codeSnippet: `// 规划架构：STM32+K210
 // 低功耗策略：RTC定时唤醒采集，LoRa发送后休眠。
 // 传感器校准与阈值判断。`,
             downloadLink: null,
-            tags: ['LoRa', '低功耗', '规划中']
+            tags: [ '低功耗', '规划中']
         }
     ];
 
@@ -330,8 +400,8 @@ void lidar_callback(uint8_t *packet) {
                     <a href="${proj.downloadLink}" class="btn" download>
                         <i class="fas fa-download"></i> 下载压缩包
                     </a>
-                    <button class="btn btn-outline" onclick="alert('工程包含完整Keil/VSCode项目，C语言源码及传感器驱动。')">
-                        <i class="fas fa-info-circle"></i> 详情
+                    <button class="btn btn-outline" onclick="alert('压缩包包含完整Keil项目，C语言源码及传感器驱动。')">
+                        <i class="fas fa-info-circle"></i> 压缩包详情
                     </button>
                 `;
             } else {
@@ -382,6 +452,5 @@ void lidar_callback(uint8_t *packet) {
     window.showDetail = function(msg) { alert(msg); };
 </script>
 
-<!-- 说明：请将实际压缩包放在 projects/ 目录下并匹配文件名；代码片段仅作展示 -->
 </body>
 </html>
