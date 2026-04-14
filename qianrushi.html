@@ -215,7 +215,7 @@
 
         <div class="tech-banner">
             <i class="fas fa-cogs"></i>
-            <span>每个项目均基于STM32，keil5，采用C语言开发，集成两种传感器。</span>
+            <span>每个项目均基于STM32，keil5，采用C语言开发</span>
         
         </div>
 
@@ -225,19 +225,19 @@
         <!-- 底部说明 -->
         <div style="margin-top: 20px; opacity: 0.5; font-size: 0.8rem; display: flex; gap: 20px;">
            </i> C语言 / HAL库</span>
-            <span><i class="fas fa-microchip"></i> 传感器驱动编写、数据融合</span>
+            <span><i class="fas fa-microchip"></i> 传感器驱动编写、数据融合、硬件连接及下载</span>
         </div>
     </div>
 </div>
 
 <script>
-    // 嵌入式项目数据 —— 四个已完成压缩包 + 一个构思中项目
+    // 嵌入式项目数据 
     const projects = [
         {
             name: '智能环境监测与报警系统',
             status: 'completed',  // 已完成
             description: '基于STM32G431RBT6,结合嵌入式开发板CT117-M4,完成智能环境监测与报警系统设计。通过监测环境温湿度，同时判断是否有人，从而使提醒人做下一步行动',
-            sensors: ['DHT11温湿度', 'HCSR501人体红外'],
+            sensors: ['DHT11温湿度', 'HCSR501人体红外','蜂鸣器'],
             codeSnippet: `// DHT11读取示例
 void dht11_sensor()
 {
@@ -277,7 +277,7 @@ void dht11_sensor()
             name: '室内温度灯光报警系统',
             status: 'completed',
             description: 'STM32G431RBT6,LED灯光显示设计。通过监测室内环境温度，温度是否过高或过低，而发出特定的灯光，使人进行降温升温手段。进一步可连接家电，达到智能家居效果',
-            sensors: ['KY028温度', 'HCSR501人体'],
+            sensors: ['KY028温度', 'HCSR501人体','灯光报警'],
             codeSnippet: `// 传感器与Led设计
 __IO uint32_t keyTick = 0;
 void Keyprocess(void)
@@ -325,7 +325,7 @@ void Keyprocess(void)
             name: '智能屏幕系统',
             status: 'completed',
             description: 'STM32G431RBT6,LCD显示屏个性设计。通过检测人的位置，LCD显示屏会发生变化。未来可用于智慧屏幕，当人到一定范围内屏幕自动开启并播放不同画面与视频，当无人时，屏幕进入自动待机模式，减少资源浪费',
-            sensors: ['HCSR501人体红外', '蜂鸣器'],
+            sensors: ['HCSR501人体红外', '蜂鸣器','LCD屏幕设计'],
             codeSnippet: `// 主函数节选示例
 void people_show()
 {

@@ -156,12 +156,12 @@
             color: #4f6f84;
         }
 
-        /* 卡片网格 */
+        /* 卡片网格 — 调整为更均衡的布局 */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(4, 1fr);  /* 固定四列，视觉更饱满 */
             gap: 24px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         /* 工业卡片 —— 灰色调为主，带有金属质感 */
@@ -219,29 +219,55 @@
             color: #2f5a70;
         }
 
-        /* 工业装饰 (齿轮/铆钉) */
+        /* 工业装饰 (齿轮/铆钉) — 移出网格，独立居中 */
         .gear-decoration {
             display: flex;
             justify-content: center;
-            gap: 6px;
-            margin-top: 20px;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
             opacity: 0.35;
+            padding: 10px 0;
         }
         .gear-decoration i {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #607d8b;
         }
+        /* 添加一条若隐若现的分隔线，强化工业秩序感 */
+        .gear-decoration::before,
+        .gear-decoration::after {
+            content: '';
+            height: 1px;
+            width: 60px;
+            background: linear-gradient(90deg, transparent, #6a8599, transparent);
+            opacity: 0.4;
+        }
+        .gear-decoration::before { margin-right: 10px; }
+        .gear-decoration::after { margin-left: 10px; }
 
-        /* 响应式 */
+        /* 响应式 — 四列布局在小屏幕自动适配 */
+        @media screen and (max-width: 900px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .page-wrapper { padding: 2rem 1.8rem; }
+        }
         @media screen and (max-width: 750px) {
             body { padding: 1rem 0.8rem; align-items: flex-start; }
-            .page-wrapper { padding: 1.8rem 1.5rem; }
-            .cards-grid { grid-template-columns: repeat(2, 1fr); }
             .page-title h1 { font-size: 1.9rem; }
         }
         @media screen and (max-width: 480px) {
             .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
             .cards-grid { grid-template-columns: 1fr; }
+            .gear-decoration::before,
+            .gear-decoration::after { width: 30px; }
+        }
+
+        /* 细微优化：让卡片内容在小屏更舒适 */
+        @media screen and (max-width: 380px) {
+            .industry-card { padding: 20px 8px 18px; }
+            .card-title { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -250,7 +276,7 @@
     <div class="ink-bg"></div>
     
     <div class="content">
-        <!-- 头部 -->
+        <!-- 头部导航 -->
         <div class="top-bar">
             <a href="about.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回作品集</a>
             <div class="page-title">
@@ -259,16 +285,32 @@
             </div>
         </div>
 
-        <!-- 灰色系工业说明 -->
+        <!-- 工业说明栏 -->
         <div class="industry-tagline">
             <i class="fas fa-microchip"></i>
-            <span>点击卡片查看作品</span>
+            <span>点击卡片查看作品 · 四大智造板块</span>
             <i class="fas fa-cog" style="margin-left: auto;"></i>
         </div>
 
-        <!-- 六个工业方向卡片 (点击跳转) -->
+        <!-- 四个工业方向卡片 -->
         <div class="cards-grid">
-            <!-- 1. SolidWorks -->
+            <!-- 1. 嵌入式 -->
+            <a href="qianrushi.html" class="industry-card">
+                <div class="card-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="card-title">嵌入式</div>
+                <div class="card-sub">STM32 · 传感器 · 单片机</div>
+            </a>
+            <!-- 2. 工业机器人 -->
+            <a href="industryrobot.html" class="industry-card">
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="card-title">工业机器人</div>
+                <div class="card-sub">FANUC · ESTUN · 集成应用</div>
+            </a>
+            <!-- 3. SolidWorks -->
             <a href="solidworks.html" class="industry-card">
                 <div class="card-icon">
                     <i class="fas fa-cube"></i>
@@ -276,52 +318,25 @@
                 <div class="card-title">SolidWorks</div>
                 <div class="card-sub">工业3D建模</div>
             </a>
-            <!-- 2. 嵌入式 -->
-            <a href="qianrushi.html" class="industry-card">
-                <div class="card-icon">
-                    <i class="fas fa-microchip"></i>
-                </div>
-                <div class="card-title">嵌入式</div>
-                <div class="card-sub">STM32、传感器、单片机</div>
-            </a>
-            <!-- 3. 智能工厂 -->
+            <!-- 4. 智能工厂 -->
             <a href="factory+plc.html" class="industry-card">
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
                 </div>
                 <div class="card-title">智能工厂</div>
-                <div class="card-sub">工厂搭建、Factory IO、PLC</div>
+                <div class="card-sub">工厂搭建 · Factory IO · PLC</div>
             </a>
+        </div>  <!-- 正确闭合卡片网格 -->
 
-            <!-- 5. 工业机器人 -->
-            <a href="industryrobot.html" class="industry-card">
-                <div class="card-icon">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <div class="card-title">工业机器人</div>
-                <div class="card-sub">发那科FANUC、埃斯顿ESTUN工业机器人</div>
-            </a>
-            <!-- 6. CNC -->
-            <a href="cnc.html" class="industry-card">
-                <div class="card-icon">
-                    <i class="fas fa-tools"></i>
-                </div>
-                <div class="card-title">CNC</div>
-                <div class="card-sub">G代码、数控技术及编程</div>
-            </a>
-        </div>
-
-        <!-- 工业风装饰 -->
+        <!-- 工业风装饰 — 独立于网格之外，视觉重心更稳 -->
         <div class="gear-decoration">
             <i class="fas fa-gear"></i>
-            <i class="fas fa-gear" style="font-size: 0.7rem;"></i>
+            <i class="fas fa-gear" style="font-size: 0.8rem;"></i>
             <i class="fas fa-gear"></i>
-            <i class="fas fa-gear" style="font-size: 0.7rem;"></i>
+            <i class="fas fa-gear" style="font-size: 0.8rem;"></i>
             <i class="fas fa-gear"></i>
         </div>
-    </div>
-</div>
-
-<!-- 说明：卡片均跳转至对应页面，请确保 solidworks.html, qianrushi.html 等文件存在 -->
+    </div>  <!-- 结束 .content -->
+</div>  <!-- 结束 .page-wrapper -->
 </body>
 </html>
