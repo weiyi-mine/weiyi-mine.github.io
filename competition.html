@@ -430,8 +430,7 @@
 function showImage(imgSrc, certName) {
     // 移除上一次的 onerror，避免干扰
     previewImg.onerror = null;
-    // 先清空 src，强制浏览器重新请求
-    previewImg.src = '';
+    previewImg.src = imgSrc + '?v=' + Date.now();
     // 隐藏占位文字，显示图片容器
     placeholderMsg.style.display = 'none';
     previewImg.style.display = 'block';

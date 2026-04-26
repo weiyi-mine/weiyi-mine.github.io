@@ -403,49 +403,76 @@
         // 初始隐藏导航
         navContainer.style.display = 'none';
 
-        // 更新预览图片与指示器
-        function updateImageDisplay() {
-            if (currentImageList.length === 0) return;
-            previewImg.src = currentImageList[currentIndex];
-            previewImg.style.display = 'block';
-            placeholderMsg.style.display = 'none';
-            previewTitle.textContent = `${currentCertName} (${currentIndex + 1}/${currentImageList.length})`;
-            indicator.textContent = `${currentIndex + 1} / ${currentImageList.length}`;
-            
-            previewImg.onerror = function() {
-                previewImg.style.display = 'none';
-                placeholderMsg.style.display = 'block';
-                placeholderMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> 图片加载失败';
-                previewTitle.textContent = '图片加载失败';
-            };
-        }
+// 更新预览图片与指示器（优化版）
+function updateImageDisplay() {
+    if (currentImageList.length === 0) {
+        showPlaceholder();
+        return;
+    }
 
-        // 显示图片集 (支持单张或多张)
-        function showImages(imgSrcString, certName) {
-            if (!imgSrcString) {
-                showPlaceholder();
-                return;
-            }
-            // 用逗号分割，去除首尾空格
-            currentImageList = imgSrcString.split(',').map(s => s.trim());
-            currentIndex = 0;
-            currentCertName = certName;
-            
-            if (currentImageList.length > 1) {
-                navContainer.style.display = 'flex';
-            } else {
-                navContainer.style.display = 'none';
-            }
-            updateImageDisplay();
-        }
+    const imgSrc = currentImageList[currentIndex];
 
-        function showPlaceholder() {
-            previewImg.style.display = 'none';
-            placeholderMsg.style.display = 'block';
-            previewTitle.textContent = '点击上方证书卡片查看大图';
-            navContainer.style.display = 'none';
-            currentImageList = [];
-        }
+    // 清除之前的错误监听，防止干扰
+    previewImg.onerror = null;
+
+    // 关键步骤：先清空 src，强制浏览器放弃缓存，再重新赋值
+    previewImg.src = '';
+
+    // 显示图片容器，隐藏占位符
+    previewImg.style.display = 'block';
+    placeholderMsg.style.display = 'none';
+    previewTitle.textContent = `${currentCertName} (${currentIndex + 1}/${currentImageList.length})`;
+    indicator.textContent = `${currentIndex + 1} / ${currentImageList.length}`;
+
+    // 重新设置图片源，附加时间戳避免浏览器/服务器缓存
+    previewImg.src = imgSrc + '?t=' + Date.now();
+
+    // 加载失败时回退
+    previewImg.onerror = function () {
+        previewImg.style.display = 'none';
+        placeholderMsg.style.display = 'block';
+        placeholderMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> 图片加载失败，请检查文件路径';
+        previewTitle.textContent = '图片加载失败';
+        // 失败时也可以尝试去掉时间戳再试一次（可选）
+        // previewImg.src = imgSrc; // 不推荐，容易陷入死循环
+    };
+}
+
+// 显示图片集 (支持单张或多张) —— 优化版
+function showImages(imgSrcString, certName) {
+    if (!imgSrcString) {
+        showPlaceholder();
+        return;
+    }
+
+    // 用逗号分割，去除首尾空格
+    currentImageList = imgSrcString.split(',').map(s => s.trim());
+    currentIndex = 0;
+    currentCertName = certName || '证书预览';
+
+    // 控制导航栏显示
+    if (currentImageList.length > 1) {
+        navContainer.style.display = 'flex';
+    } else {
+        navContainer.style.display = 'none';
+    }
+
+    // 清空图片 src，防止上一张残留
+    previewImg.src = '';
+    updateImageDisplay();
+}
+
+// 显示占位符（重置所有状态）
+function showPlaceholder() {
+    previewImg.onerror = null;
+    previewImg.src = '';               // 清空图片
+    previewImg.style.display = 'none';
+    placeholderMsg.style.display = 'block';
+    placeholderMsg.innerHTML = '<i class="fas fa-hand-pointer"></i> 选择证书，图片将显示于此';
+    previewTitle.textContent = '点击上方证书卡片查看大图';
+    navContainer.style.display = 'none';
+    currentImageList = [];
+}
 
         // 切换按钮事件
         prevBtn.addEventListener('click', () => {
