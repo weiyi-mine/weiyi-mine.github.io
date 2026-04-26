@@ -426,27 +426,27 @@
         }
 
         // 显示图片
-        function showImage(imgSrc, awardFullName) {
-            if (!imgSrc) {
-                showPlaceholder();
-                return;
-            }
-            previewImg.src = imgSrc;
-            previewImg.style.display = 'block';
-            placeholderMsg.style.display = 'none';
-            previewTitle.textContent = awardFullName || '获奖证书';
-            
-            // 如果图片加载失败，回退提示
-            previewImg.onerror = function() {
-                previewImg.style.display = 'none';
-                placeholderMsg.style.display = 'block';
-                placeholderMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> 图片未找到，请将证书图片放入目录';
-                previewTitle.textContent = '图片加载失败';
-            };
-            previewImg.onload = function() {
-                // 加载成功
-            };
-        }
+// 显示图片前先清空 src，避免残留
+function showImage(imgSrc, certName) {
+    // 移除上一次的 onerror，避免干扰
+    previewImg.onerror = null;
+    // 先清空 src，强制浏览器重新请求
+    previewImg.src = '';
+    // 隐藏占位文字，显示图片容器
+    placeholderMsg.style.display = 'none';
+    previewImg.style.display = 'block';
+    previewTitle.textContent = certName || '证书预览';
+    
+    // 再设置新的 src
+    previewImg.src = imgSrc;
+    
+    previewImg.onerror = function() {
+        previewImg.style.display = 'none';
+        placeholderMsg.style.display = 'block';
+        placeholderMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> 图片未找到';
+        previewTitle.textContent = '图片加载失败';
+    };
+}
 
         // 移除所有卡片的active类
         function removeActiveClass() {
